@@ -13,13 +13,19 @@
   },
   "keywords": [
     "set",
+    "sets",
     "multiple",
+    "tuple",
+    "tuples",
     "nset",
     "collection",
     "many",
     "items",
-    "tuple",
-    "array"
+    "values",
+    "subarray",
+    "array",
+    "deep",
+    "comparison"
   ],
   "author": "Daniel Biro",
   "license": "MIT",
