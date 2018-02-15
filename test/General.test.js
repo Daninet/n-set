@@ -64,6 +64,7 @@ test('has', () => {
   expect(set.has(2, 2)).toBe(false);
   expect(set.has(2, 3)).toBe(true);
   expect(set.has(2, 3, 4)).toBe(true);
+  expect(set.has()).toBe(false);
 });
 
 test('delete', () => {
@@ -96,6 +97,7 @@ test('delete', () => {
   expect(set.size).toBe(3);
   expect(set.delete(2, 3, 4, 5)).toBe(true);
   expect(toArray(set)).toEqual([ [ 2, 3, 4 ], [2, 3] ]);
+  expect(set.delete()).toBe(false);
 });
 
 test('foreach', () => {
