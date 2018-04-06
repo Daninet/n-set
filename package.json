@@ -1,7 +1,7 @@
 {
   "name": "n-set",
   "version": "1.0.0",
-  "description": "",
+  "description": "Allows to put arrays into sets. Works similarly like ES6 Sets.",
   "main": "index.js",
   "scripts": {
     "test": "jest --coverage",
