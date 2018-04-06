@@ -1,8 +1,9 @@
 'use strict';
+/* global test, expect */
 
 const NSet = require('../');
 
-function toArray(set) {
+function toArray (set) {
   const arr = [];
   set.forEach(it => arr.push(it));
   return arr;
@@ -144,7 +145,6 @@ test('clear', () => {
   expect(set.size).toBe(1);
   expect(toArray(set)).toEqual([ [2] ]);
 });
-
 
 test('inspect', () => {
   const set = new NSet();

@@ -1,13 +1,14 @@
 'use strict';
+/* global test, expect */
 
 const NSet = require('../');
 const NMAX = 50;
 
-function randInt(min, max) {
+function randInt (min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function compareArrayAndSet(arr, nset) {
+function compareArrayAndSet (arr, nset) {
   arr.forEach(it => {
     expect(nset.has(it)).toEqual(true);
     expect(nset.has([...it, 100])).toBe(false);

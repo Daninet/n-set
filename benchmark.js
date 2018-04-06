@@ -1,16 +1,16 @@
 const N = 5;
 const NS_PER_SEC = 1e9;
 
-const NSet = require('./')
+const NSet = require('./');
 
-function randInt(min, max) {
+function randInt (min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 const setItems = [];
 for (let i = 0; i < 1e6; i++) {
   const it = [];
-  const len = randInt(1, 4); 
+  const len = randInt(1, 4);
   for (let j = 0; j < len; j++) {
     it.push(randInt(0, 999));
   }
@@ -113,8 +113,6 @@ tests.push(() => {
   return {name: 'NSet 3-depth', value: set.size};
 });
 
-const setItems4 = setItems.filter(it => it.length === 4);
-
 tests.push(() => {
   const set = new NSet();
 
@@ -139,7 +137,7 @@ for (let n = 0; n < N; n++) {
     if (!results[key]) {
       results[key] = {
         results: [],
-        timings: [],
+        timings: []
       };
     }
     const startTime = process.hrtime();
@@ -150,7 +148,7 @@ for (let n = 0; n < N; n++) {
   });
 }
 
-function formatTiming(ms) {
+function formatTiming (ms) {
   return `${ms.toFixed(3)} ms`;
 }
 
