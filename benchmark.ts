@@ -1,7 +1,7 @@
+import NSet from './lib/NSet';
+
 const N = 5;
 const NS_PER_SEC = 1e9;
-
-const NSet = require('./');
 
 function randInt (min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -127,7 +127,7 @@ tests.push(() => {
   for (let i = setItems.length - 1; i >= 0; i--) {
     set.delete(...setItems[i]);
   }
-  return {name: 'NSet 4-depth', value: set.size};
+  return {name: 'NSet all-depth', value: set.size};
 });
 
 const results = [];

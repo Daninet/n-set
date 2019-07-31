@@ -1,7 +1,5 @@
-'use strict';
-/* global test, expect */
+import NSet from '../lib/NSet';
 
-const NSet = require('../');
 const NMAX = 50;
 
 function randInt (min, max) {

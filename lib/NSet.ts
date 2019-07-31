@@ -1,33 +1,84 @@
-'use strict';
+interface RecursiveNode<T> extends Map<T, Set<T> | RecursiveNode<T>> {}
 
-class NSet {
-  constructor () {
-    this._data = new Set();
+type Node<T> = Set<T> | RecursiveNode<T>;
+
+export default class NSet<T> {
+  private _data: Node<T>;
+  private _size: number;
+
+  constructor (arr?: T[] | NSet<T> | Set<T>) {
     this._size = 0;
+    if (arr === undefined) {
+      this._data = new Set<T>();
+      return;
+    }
+
+    if (arr instanceof NSet) {
+      const newSet = arr.clone();
+      this._data = newSet._data;
+      this._size = newSet._size;
+      return;
+    }
+
+    if (arr instanceof Set) {
+      this._size = arr.size;
+      this._data = new Set<T>(arr);
+      return;
+    }
+
+    if (Array.isArray(arr)) {
+      this._data = new Set<T>();
+      arr.forEach(item => {
+        this.add(item);
+      });
+      return;
+    }
+    throw new Error('Invalid type for NSet constructor');
   }
 
-  get size () {
+  get size (): number {
     return this._size;
   }
 
-  clear () {
-    this._data = new Set();
+  clear (): void {
+    this._data = new Set<T>();
     this._size = 0;
   }
 
-  _addWalk (arr) {
+  private _cloneWalk (node: Node<T>): Node<T> {
+    if (node instanceof Set) {
+      return new Set(node);
+    }
+    const map = new Map();
+    node.forEach((value, key) => {
+      map.set(key, !value ? value : this._cloneWalk(value));
+    });
+    return map;
+  }
+
+  clone (): NSet<T> {
+    const newSet = new NSet<T>();
+    newSet._size = this._size;
+    newSet._data = this._cloneWalk(this._data);
+    return newSet;
+  }
+
+  private _addWalk (arr: T[]): Node<T> {
+    const forLength = arr.length - 1;
     let posParent = null;
     let pos = this._data;
-    let forLength = arr.length - 1;
     let item = arr[0];
     for (let i = 0; i < forLength; i++) {
+      if (item === undefined) {
+        throw new TypeError('Undefined values are unsupported by NSet');
+      }
       if (pos instanceof Set) {
-        const map = new Map();
+        const map: RecursiveNode<T> = new Map();
         pos.forEach(it => map.set(it, null));
         if (map.has(item)) {
-          map.set(item, new Set([undefined]));
+          map.set(item, new Set<T>([undefined]));
         } else {
-          map.set(item, new Set());
+          map.set(item, new Set<T>());
         }
         if (posParent === null) {
           this._data = map;
@@ -39,10 +90,10 @@ class NSet {
         if (i < arr.length - 2) {
           pos.set(item, new Map());
         } else {
-          pos.set(item, new Set());
+          pos.set(item, new Set<T>());
         }
       } else if (pos.get(item) === null) {
-        pos.set(item, new Set([undefined]));
+        pos.set(item, new Set<T>([undefined]));
       }
       posParent = pos;
       pos = pos.get(item);
@@ -51,13 +102,19 @@ class NSet {
     return pos;
   }
 
-  add (...values) {
-    const arr = Array.isArray(values[0]) ? values[0] : values;
-    if (arr.some(val => val === undefined)) {
-      throw new Error('Adding undefined is unsupported by NSet');
-    }
+  add (value: T[]): NSet<T>;
+  add (...values: T[]): NSet<T>;
+  add (...values): NSet<T> {
+    const arr = Array.isArray(values[0]) ? values[0] as unknown as T[] : values as T[];
+    return this._add(arr);
+  }
+
+  private _add (arr: T[]): NSet<T> {
     const pos = arr.length > 1 ? this._addWalk(arr) : this._data;
     const item = arr[arr.length - 1];
+    if (item === undefined) {
+      throw new TypeError('Undefined values are unsupported by NSet');
+    }
     // processing last index
     if (pos instanceof Set) {
       const s1 = pos.size;
@@ -82,11 +139,14 @@ class NSet {
     return this;
   }
 
-  _walkToItem (arr) {
-    let pos = this._data;
+  private _walkToItem (arr: T[]): false | Node<T> {
     const forLength = arr.length - 1;
+    let pos = this._data;
     let item = arr[0];
     for (let i = 0; i < forLength; i++) {
+      if (item === undefined) {
+        throw new TypeError('Undefined values are unsupported by NSet');
+      }
       if (!(pos instanceof Map)) {
         return false;
       }
@@ -99,21 +159,32 @@ class NSet {
     return pos;
   }
 
-  has (...values) {
-    const arr = Array.isArray(values[0]) ? values[0] : values;
+  has (value: T[]): boolean;
+  has (...values: T[]): boolean;
+  has (...values): boolean {
+    const arr = Array.isArray(values[0]) ? values[0] as unknown as T[] : values as T[];
+    return this._has(arr);
+  }
 
+  private _has (arr: T[]): boolean {
     let pos = this._data;
     if (arr.length > 1) {
-      pos = this._walkToItem(arr);
-      if (pos === false) {
+      const res = this._walkToItem(arr);
+      if (res === false) {
         return false;
       }
+      pos = res;
     }
     const item = arr[arr.length - 1];
+
+    if (item === undefined) {
+      throw new TypeError('Undefined values are unsupported by NSet');
+    }
 
     if (pos === null) {
       return false;
     }
+
     if (pos instanceof Set) {
       return pos.has(item);
     } else { // Map
@@ -131,16 +202,26 @@ class NSet {
     return false; // pos.has(undefined);
   }
 
-  delete (...values) {
-    const arr = Array.isArray(values[0]) ? values[0] : values;
+  delete (value: T[]): boolean;
+  delete (...values: T[]): boolean;
+  delete (...values): boolean {
+    const arr = Array.isArray(values[0]) ? values[0] as unknown as T[] : values as T[];
+    return this._delete(arr);
+  }
+
+  private _delete (arr: T[]): boolean {
     let pos = this._data;
     if (arr.length > 1) {
-      pos = this._walkToItem(arr);
-      if (pos === false) {
+      const res = this._walkToItem(arr);
+      if (res === false) {
         return false;
       }
+      pos = res;
     }
     const item = arr[arr.length - 1];
+    if (item === undefined) {
+      throw new TypeError('Undefined values are unsupported by NSet');
+    }
 
     if (pos instanceof Set) {
       const res = pos.delete(item);
@@ -164,11 +245,24 @@ class NSet {
     return false;
   }
 
-  entries () {
+  entries (): Iterator<[T[], T[]]> {
+    const values = this.values();
+    return {
+      next: () => {
+        const it = values.next();
+        return {
+          value: [it.value, it.value],
+          done: it.done,
+        };
+      }
+    };
+  }
+
+  values (): Iterator<T[]> {
     const iterators = [this._data.entries()];
-    const values = [];
-    let iteratorIndex = 0;
-    let inSet = this._data instanceof Set;
+    const values: T[] = [];
+    let iteratorIndex: number = 0;
+    let inSet: boolean = this._data instanceof Set;
 
     return {
       next: () => {
@@ -189,19 +283,19 @@ class NSet {
           if (v.value[0] === undefined) { // terminator
             const newItem = values.slice(0, iteratorIndex);
             return {
-              value: [newItem, newItem],
+              value: newItem,
               done: false
             };
           } else if (content === null || inSet) {
             const newItem = values.slice(0, iteratorIndex + 1);
             return {
-              value: [newItem, newItem],
+              value: newItem,
               done: false
             };
-          } else if (content.size > 0) {
+          } else if ((content as Node<T>).size > 0) {
             iteratorIndex++;
             inSet = content instanceof Set;
-            iterators[iteratorIndex] = content.entries();
+            iterators[iteratorIndex] = (content as Node<T>).entries();
           }
         }
         return {
@@ -212,38 +306,39 @@ class NSet {
     };
   }
 
-  values () {
-    const entries = this.entries();
-    return {
-      next: () => {
-        const it = entries.next();
-        return {
-          value: it.value && it.value[1],
-          done: it.done
-        };
-      }
-    };
-  }
-
-  forEach (func) {
+  forEach (func: (value: T[], index: number, set: NSet<T>) => void): void {
     const entries = this.values();
-    while (1) {
+    let index = 0;
+    while (true) {
       const v = entries.next();
       if (v.done) {
         break;
       }
-      func(v.value, v.value, this);
+      func(v.value, index++, this);
     }
   }
 
-  [Symbol.iterator] () {
+  toJSON (): T[][] {
+    const obj: T[][] = [];
+    const entries = this.values();
+    while (true) {
+      const v = entries.next();
+      if (v.done) {
+        break;
+      }
+      obj.push(v.value);
+    }
+    return obj;
+  }
+
+  [Symbol.iterator] (): Iterator<T[]> {
     return this.values();
   }
 
-  inspect () {
+  inspect (): string {
     const entries = this.values();
     const pairs = [];
-    while (1) {
+    while (true) {
       const v = entries.next();
       if (v.done) {
         break;
@@ -254,5 +349,3 @@ class NSet {
     return `NSet { ${pairs.map(p => `(${p.join(', ')})`).join(', ')} }`;
   }
 }
-
-module.exports = NSet;
