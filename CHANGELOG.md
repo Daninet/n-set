@@ -1,3 +1,7 @@
+## 2.0.1 (July 31, 2019)
+
+* Add keyword for TypeScript
+
 ## 2.0.0 (July 31, 2019)
 
 * Migrated to TypeScript
