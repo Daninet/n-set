@@ -7,6 +7,8 @@ n-set
 
 Allows to put arrays into sets. Works similarly like ES6 Sets.
 
+Contains type definitions for TypeScript.
+
 Install
 =======
 ```

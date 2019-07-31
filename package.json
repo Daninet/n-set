@@ -28,7 +28,8 @@
     "subarray",
     "array",
     "deep",
-    "comparison"
+    "comparison",
+    "typescript"
   ],
   "author": "Daniel Biro",
   "license": "MIT",
